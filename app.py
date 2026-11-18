@@ -116,6 +116,16 @@ USERS = {
         "role": "student",
         "title": "Computer Science Scholar",
         "avatar": "/static/img/avatar.png"
+    },
+    "priya@hostel.edu": {
+        "id": "U-STUDENT2",
+        "name": "Priya Sharma",
+        "email": "priya@hostel.edu",
+        "student_id": "IT2026015",
+        "password": "password123",
+        "role": "student",
+        "title": "Information Technology Scholar",
+        "avatar": "/static/img/avatar.png"
     }
 }
 

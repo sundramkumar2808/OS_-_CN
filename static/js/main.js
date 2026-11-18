@@ -474,6 +474,7 @@ function setupAuth() {
   // 1-Click quick logins on gatekeeper screen
   const btnSundram = document.getElementById("btnGateFillSundram");
   const btnAdmin = document.getElementById("btnGateFillAdmin");
+  const btnGatePriya = document.getElementById("btnGateFillPriya");
 
   if (btnSundram) {
     btnSundram.addEventListener("click", () => {
@@ -481,6 +482,7 @@ function setupAuth() {
       const passInput = document.getElementById("gateLoginPassword");
       if (idInput) idInput.value = "sundram@hostel.edu";
       if (passInput) passInput.value = "password123";
+      showToast("⚡ Quick Login: Signing in as Sundram Kumar...", "info");
       executeLogin("sundram@hostel.edu", "password123");
     });
   }
@@ -490,7 +492,132 @@ function setupAuth() {
       const passInput = document.getElementById("gateLoginPassword");
       if (idInput) idInput.value = "admin@hostel.edu";
       if (passInput) passInput.value = "admin";
+      showToast("⚡ Quick Login: Signing in as Chief Warden...", "info");
       executeLogin("admin@hostel.edu", "admin");
+    });
+  }
+  if (btnGatePriya) {
+    btnGatePriya.addEventListener("click", () => {
+      const idInput = document.getElementById("gateLoginIdentifier");
+      const passInput = document.getElementById("gateLoginPassword");
+      if (idInput) idInput.value = "priya@hostel.edu";
+      if (passInput) passInput.value = "password123";
+      showToast("⚡ Quick Login: Signing in as Priya Sharma...", "info");
+      executeLogin("priya@hostel.edu", "password123");
+    });
+  }
+
+  // Continue as guest from gatekeeper screen
+  const btnGateGuest = document.getElementById("btnGateGuestExplore");
+  if (btnGateGuest) {
+    btnGateGuest.addEventListener("click", () => {
+      const authGateScreen = document.getElementById("authGateScreen");
+      const mainAppLayout = document.getElementById("mainAppLayout");
+      if (authGateScreen) authGateScreen.style.display = "none";
+      if (mainAppLayout) mainAppLayout.style.display = "flex";
+      showToast("Browsing as Guest. You can sign in anytime from the sidebar.", "info");
+    });
+  }
+
+  // ── 1-Click Quick Logins on the Dedicated Page (Access Portal) ──
+  const btnPageStudent = document.getElementById("btnPageFillStudent");
+  const btnPageAdmin = document.getElementById("btnPageFillAdmin");
+  const btnPageStudent2 = document.getElementById("btnPageFillStudent2");
+
+  if (btnPageStudent) {
+    btnPageStudent.addEventListener("click", () => {
+      const idInput = document.getElementById("pageLoginIdentifier");
+      const passInput = document.getElementById("pageLoginPassword");
+      if (idInput) idInput.value = "sundram@hostel.edu";
+      if (passInput) passInput.value = "password123";
+      btnPageStudent.classList.add("pulse");
+      setTimeout(() => btnPageStudent.classList.remove("pulse"), 600);
+      showToast("⚡ Quick Login: Signing in as Sundram Kumar...", "info");
+      executeLogin("sundram@hostel.edu", "password123");
+    });
+  }
+  if (btnPageAdmin) {
+    btnPageAdmin.addEventListener("click", () => {
+      const idInput = document.getElementById("pageLoginIdentifier");
+      const passInput = document.getElementById("pageLoginPassword");
+      if (idInput) idInput.value = "admin@hostel.edu";
+      if (passInput) passInput.value = "admin";
+      btnPageAdmin.classList.add("pulse");
+      setTimeout(() => btnPageAdmin.classList.remove("pulse"), 600);
+      showToast("⚡ Quick Login: Signing in as Chief Warden...", "info");
+      executeLogin("admin@hostel.edu", "admin");
+    });
+  }
+  if (btnPageStudent2) {
+    btnPageStudent2.addEventListener("click", () => {
+      const idInput = document.getElementById("pageLoginIdentifier");
+      const passInput = document.getElementById("pageLoginPassword");
+      if (idInput) idInput.value = "priya@hostel.edu";
+      if (passInput) passInput.value = "password123";
+      btnPageStudent2.classList.add("pulse");
+      setTimeout(() => btnPageStudent2.classList.remove("pulse"), 600);
+      showToast("⚡ Quick Login: Signing in as Priya Sharma...", "info");
+      executeLogin("priya@hostel.edu", "password123");
+    });
+  }
+
+  // Dedicated Page: Password show/hide toggles
+  const toggleLoginPass = document.getElementById("togglePageLoginPass");
+  if (toggleLoginPass) {
+    toggleLoginPass.addEventListener("click", () => {
+      const passInput = document.getElementById("pageLoginPassword");
+      if (!passInput) return;
+      const isPass = passInput.type === "password";
+      passInput.type = isPass ? "text" : "password";
+      toggleLoginPass.textContent = isPass ? "🙈" : "👁️";
+    });
+  }
+
+  const toggleSignupPass = document.getElementById("togglePageSignupPass");
+  if (toggleSignupPass) {
+    toggleSignupPass.addEventListener("click", () => {
+      const passInput = document.getElementById("pageSignupPassword");
+      if (!passInput) return;
+      const isPass = passInput.type === "password";
+      passInput.type = isPass ? "text" : "password";
+      toggleSignupPass.textContent = isPass ? "🙈" : "👁️";
+    });
+  }
+
+  // Dedicated Page: Login Form submit
+  const pageLoginForm = document.getElementById("pageLoginForm");
+  if (pageLoginForm) {
+    pageLoginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("pageLoginIdentifier").value.trim();
+      const pass = document.getElementById("pageLoginPassword").value.trim();
+      if (!id || !pass) {
+        showToast("Please enter both ID/Email and password", "warning");
+        return;
+      }
+      await executeLogin(id, pass);
+    });
+  }
+
+  // Dedicated Page: Signup Form submit
+  const pageSignupForm = document.getElementById("pageSignupForm");
+  if (pageSignupForm) {
+    pageSignupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("pageSignupName").value.trim();
+      const student_id = document.getElementById("pageSignupStudentId").value.trim();
+      const email = document.getElementById("pageSignupEmail").value.trim();
+      const password = document.getElementById("pageSignupPassword").value.trim();
+      const deptEl = document.getElementById("pageSignupDept");
+      const roleEl = document.getElementById("pageSignupRole");
+      const dept = deptEl ? deptEl.value : "Computer Science";
+      const role = roleEl ? roleEl.value : "student";
+
+      if (!name || !student_id || !email || !password) {
+        showToast("Please fill in all required fields", "warning");
+        return;
+      }
+      await executeSignup({ name, student_id, email, password, role, title: dept });
     });
   }
 
@@ -576,9 +703,20 @@ async function executeLogin(identifier, password) {
       currentUser = data.user;
       localStorage.setItem("hostel_user", JSON.stringify(currentUser));
       updateAuthUI();
-      // Land directly in the Dashboard tab!
-      const dashBtn = document.querySelector('[data-tab="dashboard"]');
-      if (dashBtn) dashBtn.click();
+
+      // If logging in from gate splash screen, transition to dashboard
+      const authGateScreen = document.getElementById("authGateScreen");
+      const activeSection = document.querySelector(".tab-section.active");
+      const isAuthTabActive = activeSection && activeSection.id === "tab-auth";
+
+      if (authGateScreen && authGateScreen.style.display !== "none") {
+        const dashBtn = document.querySelector('[data-tab="dashboard"]');
+        if (dashBtn) dashBtn.click();
+      } else if (!isAuthTabActive) {
+        const dashBtn = document.querySelector('[data-tab="dashboard"]');
+        if (dashBtn) dashBtn.click();
+      }
+
       showToast(`👋 Welcome back, ${currentUser.name}!`, "success");
     } else {
       showToast(`❌ ${data.error}`, "error");
@@ -600,9 +738,6 @@ async function executeSignup(payload) {
       currentUser = data.user;
       localStorage.setItem("hostel_user", JSON.stringify(currentUser));
       updateAuthUI();
-      // Land directly in the Dashboard tab!
-      const dashBtn = document.querySelector('[data-tab="dashboard"]');
-      if (dashBtn) dashBtn.click();
       showToast(`🎉 Account created! Welcome, ${currentUser.name}.`, "success");
     } else {
       showToast(`❌ ${data.error}`, "error");
@@ -616,7 +751,9 @@ function logoutUser() {
   currentUser = null;
   localStorage.removeItem("hostel_user");
   updateAuthUI();
-  showToast("Logged out successfully. Enter credentials to re-access.", "info");
+  const navAuthTab = document.getElementById("navAuthTab");
+  if (navAuthTab) navAuthTab.click();
+  showToast("Logged out. Select any demo account to sign in.", "info");
 }
 
 function updateAuthUI() {
@@ -628,10 +765,14 @@ function updateAuthUI() {
   const sideUserSub = document.getElementById("sidebarUserSubTitle");
   const aiGreeting = document.getElementById("aiGreetingName");
   const navAuthTab = document.getElementById("navAuthTab");
+  const authGuestView = document.getElementById("authGuestView");
+  const authUserProfileView = document.getElementById("authUserProfileView");
 
   if (currentUser) {
     if (authGateScreen) authGateScreen.style.display = "none";
     if (mainAppLayout) mainAppLayout.style.display = "flex";
+    if (authGuestView) authGuestView.style.display = "none";
+    if (authUserProfileView) authUserProfileView.style.display = "block";
 
     const defaultTitle = currentUser.role === "admin" ? "Hostel Administrator" : "Computer Science Scholar";
     if (userNameEl) userNameEl.textContent = currentUser.name || "Sundram Kumar";
@@ -669,8 +810,18 @@ function updateAuthUI() {
     refreshGreeting();
     loadUserBedInfo(currentUser.student_id, currentUser.name);
   } else {
-    if (authGateScreen) authGateScreen.style.display = "flex";
-    if (mainAppLayout) mainAppLayout.style.display = "none";
+    // Guest / Not logged in
+    if (authGuestView) authGuestView.style.display = "block";
+    if (authUserProfileView) authUserProfileView.style.display = "none";
+
+    if (navAuthTab) {
+      navAuthTab.innerHTML = `<span class="sidebar-item-icon">👤</span> <span class="sidebar-item-label">Sign In / Sign Up</span>`;
+    }
+    if (userNameEl) userNameEl.textContent = "Guest Student";
+    if (userSubEl) userSubEl.textContent = "Not Signed In";
+    if (sideUserName) sideUserName.textContent = "Guest Student";
+    if (sideUserSub) sideUserSub.textContent = "Click to Sign In";
+    if (aiGreeting) aiGreeting.textContent = "Guest";
   }
 }
 

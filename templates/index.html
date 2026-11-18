@@ -48,24 +48,13 @@
       <button type="submit" class="btn btn-primary btn-full mt-3" style="padding:12px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;">
         <span>🔓 Sign In to Dashboard</span>
       </button>
-      <div class="form-group">
-        <label style="font-size:12.5px;font-weight:600;">Email Address or Student / Admin ID</label>
-        <input type="text" id="gateLoginIdentifier" placeholder="e.g. sundram@hostel.edu or CS2026001" required />
-      </div>
-      <div class="form-group">
-        <label style="font-size:12.5px;font-weight:600;">Password</label>
-        <input type="password" id="gateLoginPassword" placeholder="Enter your password" required />
-      </div>
-      <button type="submit" class="btn btn-primary btn-full mt-3" style="padding:12px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;">
-        <span>🔓 Sign In to Dashboard</span>
-      </button>
 
       <!-- 1-Click Quick Demo Accounts -->
       <div class="auth-gate-demo-box">
         <div style="font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:6px;">⚡ 1-Click Quick Demo Logins:</div>
         <div class="auth-gate-demo-item" id="btnGateFillSundram">
           <div style="display:flex;align-items:center;gap:8px;">
-            <img src="/static/img/avatar.png" style="width:26px;height:26px;border-radius:50%;object-fit:cover;" />
+            <div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:14px;">👨‍🎓</div>
             <div>
               <div style="font-weight:700;">Sundram Kumar</div>
               <div style="font-size:10.5px;color:var(--text-muted);">Computer Science Scholar · sundram@hostel.edu</div>
@@ -75,7 +64,7 @@
         </div>
         <div class="auth-gate-demo-item" id="btnGateFillAdmin">
           <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:18px;">🛠️</span>
+            <div style="width:28px;height:28px;border-radius:50%;background:#ef4444;display:flex;align-items:center;justify-content:center;font-size:14px;">🛠️</div>
             <div>
               <div style="font-weight:700;">Hostel Warden / Administrator</div>
               <div style="font-size:10.5px;color:var(--text-muted);">Admin Full Access · admin@hostel.edu</div>
@@ -83,6 +72,22 @@
           </div>
           <span class="badge badge-err" style="font-size:10px;">Select</span>
         </div>
+        <div class="auth-gate-demo-item" id="btnGateFillPriya">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#ec4899;display:flex;align-items:center;justify-content:center;font-size:14px;">👩‍🎓</div>
+            <div>
+              <div style="font-weight:700;">Priya Sharma</div>
+              <div style="font-size:10.5px;color:var(--text-muted);">IT Scholar (Female Wing) · priya@hostel.edu</div>
+            </div>
+          </div>
+          <span class="badge badge-success" style="font-size:10px;">Select</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);">
+        <button type="button" id="btnGateGuestExplore" style="background:none;border:none;color:#94a3b8;font-size:12px;cursor:pointer;text-decoration:underline;">
+          👁️ Continue as Guest (Browse Allocation Maps)
+        </button>
       </div>
     </form>
 
@@ -1388,8 +1393,9 @@
         <!-- CARD 1: SIGN IN -->
         <div class="auth-page-card">
           <div class="auth-page-header">
+            <span class="auth-card-badge">🔑 VERIFIED PORTAL ACCESS</span>
             <div class="auth-page-title">
-              <span>🔑 Sign In to Your Account</span>
+              <span>Sign In to Your Account</span>
             </div>
             <div class="auth-page-subtitle">
               Enter your student ID or email to access your hostel room &amp; bed assignment.
@@ -1399,39 +1405,96 @@
           <form id="pageLoginForm">
             <div class="form-group">
               <label>Email Address or Student / Admin ID</label>
-              <input type="text" id="pageLoginIdentifier" placeholder="e.g. sundram@hostel.edu or CS2026001" required />
+              <div class="auth-input-wrap">
+                <span class="auth-input-icon">✉️</span>
+                <input type="text" id="pageLoginIdentifier" placeholder="e.g. sundram@hostel.edu or CS2026001" required autocomplete="username" />
+              </div>
             </div>
+
             <div class="form-group">
               <label>Password</label>
-              <input type="password" id="pageLoginPassword" placeholder="Enter your password" required />
+              <div class="auth-input-wrap">
+                <span class="auth-input-icon">🔒</span>
+                <input type="password" id="pageLoginPassword" placeholder="Enter your password" required autocomplete="current-password" />
+                <button type="button" class="auth-password-toggle" id="togglePageLoginPass" title="Toggle password visibility">👁️</button>
+              </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-full mt-3" style="padding:12px;font-size:14px;font-weight:700;">
-              🔓 Sign In to HostelHub
+
+            <button type="submit" class="btn-auth-primary mt-2">
+              <span>🔓 Sign In to HostelHub</span>
             </button>
 
-            <!-- 1-Click Demo Credentials -->
-            <div class="auth-demo-credentials" style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--border);">
-              <div style="font-weight:700;color:var(--text);margin-bottom:8px;font-size:12px;">⚡ 1-Click Demo Quick Logins:</div>
-              <div style="display:flex;flex-direction:column;gap:8px;">
-                <button type="button" class="btn btn-outline btn-xs" id="btnPageFillStudent" style="justify-content:flex-start;padding:8px 12px;font-size:12px;">
-                  👨‍🎓 <b>Student Demo:</b> sundram@hostel.edu (Pass: password123)
-                </button>
-                <button type="button" class="btn btn-outline btn-xs" id="btnPageFillAdmin" style="justify-content:flex-start;padding:8px 12px;font-size:12px;">
-                  🛠️ <b>Warden / Admin Demo:</b> admin@hostel.edu (Pass: admin)
-                </button>
-                <button type="button" class="btn btn-outline btn-xs" id="btnPageFillStudent2" style="justify-content:flex-start;padding:8px 12px;font-size:12px;">
-                  👩‍🎓 <b>Student Demo:</b> priya@hostel.edu (Pass: password123)
-                </button>
+            <!-- 1-Click Interactive Demo Quick Logins -->
+            <div class="auth-demo-container">
+              <div class="auth-demo-header">
+                <div class="auth-demo-title">
+                  <span>⚡ 1-Click Demo Quick Logins</span>
+                </div>
+                <span class="auth-demo-hint">Instant Access</span>
+              </div>
+
+              <div class="auth-quick-login-grid">
+                <!-- 1. Student Sundram -->
+                <div class="auth-quick-card" id="btnPageFillStudent" role="button" tabindex="0" title="Click to instantly sign in as Sundram Kumar">
+                  <div class="auth-quick-card-left">
+                    <div class="auth-quick-avatar student1">👨‍🎓</div>
+                    <div class="auth-quick-info">
+                      <div class="auth-quick-name-row">
+                        <span class="auth-quick-name">Sundram Kumar</span>
+                        <span class="auth-quick-tag student">STUDENT</span>
+                      </div>
+                      <div class="auth-quick-meta">sundram@hostel.edu · Pass: password123</div>
+                    </div>
+                  </div>
+                  <div class="auth-quick-action">
+                    <span>Login ⚡</span>
+                  </div>
+                </div>
+
+                <!-- 2. Admin / Warden -->
+                <div class="auth-quick-card" id="btnPageFillAdmin" role="button" tabindex="0" title="Click to instantly sign in as Chief Warden">
+                  <div class="auth-quick-card-left">
+                    <div class="auth-quick-avatar admin">🛠️</div>
+                    <div class="auth-quick-info">
+                      <div class="auth-quick-name-row">
+                        <span class="auth-quick-name">Chief Hostel Warden</span>
+                        <span class="auth-quick-tag admin">ADMIN</span>
+                      </div>
+                      <div class="auth-quick-meta">admin@hostel.edu · Pass: admin</div>
+                    </div>
+                  </div>
+                  <div class="auth-quick-action">
+                    <span>Login ⚡</span>
+                  </div>
+                </div>
+
+                <!-- 3. Student Priya -->
+                <div class="auth-quick-card" id="btnPageFillStudent2" role="button" tabindex="0" title="Click to instantly sign in as Priya Sharma">
+                  <div class="auth-quick-card-left">
+                    <div class="auth-quick-avatar student2">👩‍🎓</div>
+                    <div class="auth-quick-info">
+                      <div class="auth-quick-name-row">
+                        <span class="auth-quick-name">Priya Sharma</span>
+                        <span class="auth-quick-tag pink">STUDENT</span>
+                      </div>
+                      <div class="auth-quick-meta">priya@hostel.edu · Pass: password123</div>
+                    </div>
+                  </div>
+                  <div class="auth-quick-action">
+                    <span>Login ⚡</span>
+                  </div>
+                </div>
               </div>
             </div>
           </form>
         </div>
 
         <!-- CARD 2: SIGN UP -->
-        <div class="auth-page-card">
+        <div class="auth-page-card signup-card">
           <div class="auth-page-header">
+            <span class="auth-card-badge green">✨ NEW STUDENT REGISTRATION</span>
             <div class="auth-page-title">
-              <span>📝 Create New Account (Sign Up)</span>
+              <span>Create New Account (Sign Up)</span>
             </div>
             <div class="auth-page-subtitle">
               New to HostelHub? Register your student profile to request room &amp; bed allocations.
@@ -1442,53 +1505,65 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Full Name</label>
-                <input type="text" id="pageSignupName" placeholder="e.g. Sundram Kumar" required />
+                <div class="auth-input-wrap">
+                  <span class="auth-input-icon">👤</span>
+                  <input type="text" id="pageSignupName" placeholder="e.g. Sundram Kumar" required />
+                </div>
               </div>
               <div class="form-group">
                 <label>Student ID / Reg No</label>
-                <input type="text" id="pageSignupStudentId" placeholder="e.g. CS2026042" required />
+                <div class="auth-input-wrap">
+                  <span class="auth-input-icon">🆔</span>
+                  <input type="text" id="pageSignupStudentId" placeholder="e.g. CS2026042" required />
+                </div>
               </div>
             </div>
+
             <div class="form-group">
               <label>University Email</label>
-              <input type="email" id="pageSignupEmail" placeholder="e.g. student@hostel.edu" required />
+              <div class="auth-input-wrap">
+                <span class="auth-input-icon">✉️</span>
+                <input type="email" id="pageSignupEmail" placeholder="e.g. student@hostel.edu" required />
+              </div>
             </div>
+
             <div class="form-row">
               <div class="form-group">
                 <label>Academic Department</label>
-                <select id="pageSignupDept" class="filter-select" style="width:100%;font-size:12.5px;padding:9px 12px;">
-                  <option value="Computer Science">Computer Science &amp; Engineering</option>
-                  <option value="Information Technology">Information Technology</option>
-                  <option value="Electronics">Electronics &amp; Comm Engineering</option>
-                  <option value="Mechanical">Mechanical Engineering</option>
-                  <option value="Civil">Civil Engineering</option>
-                  <option value="Research / PhD">Research / PhD Scholar</option>
- 
-            <option value="Civil Engineering">Civil Engineering</option>
-            <option value="Electrical Engineering">Electrical Engineering</option>
-            <option value="Chemical Engineering">Chemical Engineering</option>
-            <option value="Business Administration">Business Administration</option>
-            </select>
+                <div class="auth-input-wrap">
+                  <select id="pageSignupDept" class="filter-select" style="width:100%;">
+                    <option value="Computer Science">Computer Science &amp; Engineering</option>
+                    <option value="Information Technology">Information Technology</option>
+                    <option value="Electronics">Electronics &amp; Communication</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+                    <option value="Electrical Engineering">Electrical Engineering</option>
+                    <option value="Research Scholar">Research Scholar / PhD</option>
+                  </select>
+                </div>
               </div>
               <div class="form-group">
                 <label>Portal Role</label>
-                <select id="pageSignupRole" class="filter-select" style="width:100%;font-size:12.5px;padding:9px 12px;">
-                  <option value="student">Student (Hostel Applicant)</option>
-                  <option value="admin">Hostel Warden / Administrator</option>
- 
-            <option value="Civil Engineering">Civil Engineering</option>
-            <option value="Electrical Engineering">Electrical Engineering</option>
-            <option value="Chemical Engineering">Chemical Engineering</option>
-            <option value="Business Administration">Business Administration</option>
-            </select>
+                <div class="auth-input-wrap">
+                  <select id="pageSignupRole" class="filter-select" style="width:100%;">
+                    <option value="student">Student (Hostel Applicant)</option>
+                    <option value="admin">Hostel Warden / Administrator</option>
+                  </select>
+                </div>
               </div>
             </div>
+
             <div class="form-group">
               <label>Create Password</label>
-              <input type="password" id="pageSignupPassword" placeholder="Minimum 6 characters" required />
+              <div class="auth-input-wrap">
+                <span class="auth-input-icon">🔒</span>
+                <input type="password" id="pageSignupPassword" placeholder="Minimum 6 characters" required autocomplete="new-password" />
+                <button type="button" class="auth-password-toggle" id="togglePageSignupPass" title="Toggle password visibility">👁️</button>
+              </div>
             </div>
-            <button type="submit" class="btn btn-success btn-full mt-3" style="padding:12px;font-size:14px;font-weight:700;">
-              ✨ Register Account &amp; Sign In
+
+            <button type="submit" class="btn-auth-success mt-2">
+              <span>✨ Register Account &amp; Sign In</span>
             </button>
           </form>
         </div>
@@ -1496,12 +1571,14 @@
       </div>
 
       <!-- Security & OS Mutex Highlight Banner -->
-      <div class="card mt-4" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span style="font-size:24px;">🛡️</span>
+      <div class="card mt-4" style="background:linear-gradient(135deg, rgba(30,41,59,0.7), rgba(15,23,42,0.85));border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:22px 26px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">
+            🛡️
+          </div>
           <div>
             <div style="font-weight:700;font-size:15px;color:#fff;">Protected by Mutual Exclusion &amp; Counting Semaphores</div>
-            <div style="font-size:12.5px;color:var(--text-muted);margin-top:2px;">
+            <div style="font-size:12.5px;color:var(--text-muted);margin-top:3px;line-height:1.5;">
               Every authenticated account is guaranteed 1-to-1 bed mapping. When concurrent applicants submit for the same bed or capacity pools, Mutex locks and Counting Semaphores ensure 100% duplicate prevention.
             </div>
           </div>
