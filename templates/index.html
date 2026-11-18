@@ -4,103 +4,455 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hostel Room &amp; Bed Allocation System</title>
-  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/style.css?v=20261118_v3" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-<!-- ════════════  HEADER  ════════════ -->
-<header class="header">
-  <div class="header-inner">
-    <div class="logo">
-      <div class="logo-icon">🏠</div>
-      <div class="logo-text">
-        <span class="logo-title">HostelHub</span>
-        <span class="logo-sub">Room &amp; Bed Allocation System</span>
+<!-- ════════════════════════════════════════════════════════
+     1. SEPARATE AUTH GATEKEEPER SCREEN (STANDALONE SIGN IN / SIGN UP)
+     ════════════════════════════════════════════════════════ -->
+<div id="authGateScreen" class="auth-gate-screen">
+  <div class="auth-gate-box">
+    <div class="auth-gate-header">
+      <div class="auth-gate-brand-icon">🏠</div>
+      <h1 style="font-size:24px;font-weight:800;color:var(--text);letter-spacing:-0.02em;">HostelHub Portal</h1>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:4px;">
+        University Room &amp; Bed Allocation System · OS Concurrency Lab
+      </p>
+      <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <span class="qhc-badge" style="background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.25);padding:3px 10px;border-radius:15px;font-size:11px;font-weight:700;">🔒 Mutex Lock</span>
+        <span class="qhc-badge" style="background:rgba(139,92,246,0.12);color:#c084fc;border:1px solid rgba(139,92,246,0.25);padding:3px 10px;border-radius:15px;font-size:11px;font-weight:700;">🚦 Counting Semaphore (100)</span>
+        <span class="qhc-badge" style="background:rgba(34,197,94,0.12);color:#22c55e;border:1px solid rgba(34,197,94,0.25);padding:3px 10px;border-radius:15px;font-size:11px;font-weight:700;">🍃 MongoDB 9.0 Active</span>
       </div>
     </div>
-    <nav class="nav-tabs">
-      <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
-      <button class="tab-btn" data-tab="allocate">➕ Allocate</button>
-      <button class="tab-btn" data-tab="multi">⚔️ Same-Bed Resolution</button>
-      <button class="tab-btn" data-tab="blocks">🏢 Blocks (5)</button>
-      <button class="tab-btn" data-tab="log">📋 Log</button>
-      <button class="tab-btn" data-tab="demo">🛡️ Race Simulation</button>
-      <button class="tab-btn" data-tab="admin">🛠️ Admin</button>
-      <button class="tab-btn" data-tab="analytics">📈 Analytics &amp; Reports</button>
-    </nav>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <div id="authPill" class="auth-pill" style="display:none;">
-        <span class="user-avatar">👤</span>
-        <span id="authUserName">Student</span>
-        <span class="user-role-badge" id="authUserRole">STUDENT</span>
-        <button class="btn btn-outline btn-xs" id="btnLogout">Sign Out</button>
-      </div>
-      <button class="btn btn-primary btn-sm" id="btnOpenAuthModal">🔐 Sign In / Sign Up</button>
-      <button class="btn btn-outline btn-sm" id="resetBtn">🔄 Reset</button>
+
+    <!-- TABS: SIGN IN vs SIGN UP -->
+    <div class="auth-gate-tabs">
+      <button type="button" class="auth-gate-tab-btn active" id="btnGateTabLogin">🔑 Sign In</button>
+      <button type="button" class="auth-gate-tab-btn" id="btnGateTabSignup">📝 Create Account</button>
     </div>
+
+    <!-- SIGN IN FORM -->
+    <form id="gateLoginForm">
+      <div class="form-group">
+        <label style="font-size:12.5px;font-weight:600;">Email Address or Student / Admin ID</label>
+        <input type="text" id="gateLoginIdentifier" placeholder="e.g. sundram@hostel.edu or CS2026001" required />
+      </div>
+      <div class="form-group">
+        <label style="font-size:12.5px;font-weight:600;">Password</label>
+        <input type="password" id="gateLoginPassword" placeholder="Enter your password" required />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full mt-3" style="padding:12px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span>🔓 Sign In to Dashboard</span>
+      </button>
+      <div class="form-group">
+        <label style="font-size:12.5px;font-weight:600;">Email Address or Student / Admin ID</label>
+        <input type="text" id="gateLoginIdentifier" placeholder="e.g. sundram@hostel.edu or CS2026001" required />
+      </div>
+      <div class="form-group">
+        <label style="font-size:12.5px;font-weight:600;">Password</label>
+        <input type="password" id="gateLoginPassword" placeholder="Enter your password" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-full mt-3" style="padding:12px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span>🔓 Sign In to Dashboard</span>
+      </button>
+
+      <!-- 1-Click Quick Demo Accounts -->
+      <div class="auth-gate-demo-box">
+        <div style="font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:6px;">⚡ 1-Click Quick Demo Logins:</div>
+        <div class="auth-gate-demo-item" id="btnGateFillSundram">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <img src="/static/img/avatar.png" style="width:26px;height:26px;border-radius:50%;object-fit:cover;" />
+            <div>
+              <div style="font-weight:700;">Sundram Kumar</div>
+              <div style="font-size:10.5px;color:var(--text-muted);">Computer Science Scholar · sundram@hostel.edu</div>
+            </div>
+          </div>
+          <span class="badge badge-success" style="font-size:10px;">Select</span>
+        </div>
+        <div class="auth-gate-demo-item" id="btnGateFillAdmin">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:18px;">🛠️</span>
+            <div>
+              <div style="font-weight:700;">Hostel Warden / Administrator</div>
+              <div style="font-size:10.5px;color:var(--text-muted);">Admin Full Access · admin@hostel.edu</div>
+            </div>
+          </div>
+          <span class="badge badge-err" style="font-size:10px;">Select</span>
+        </div>
+      </div>
+    </form>
+
+    <!-- SIGN UP FORM -->
+    <form id="gateSignupForm" style="display:none;">
+      <div class="form-row">
+        <div class="form-group">
+          <label style="font-size:12.5px;font-weight:600;">Full Name</label>
+          <input type="text" id="gateSignupName" placeholder="e.g. Sundram Kumar" required />
+        </div>
+        <div class="form-group">
+          <label style="font-size:12.5px;font-weight:600;">Student / Reg ID</label>
+          <input type="text" id="gateSignupStudentId" placeholder="e.g. CS2026001" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label style="font-size:12.5px;font-weight:600;">University Email</label>
+        <input type="email" id="gateSignupEmail" placeholder="e.g. student@hostel.edu" required />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label style="font-size:12.5px;font-weight:600;">Department</label>
+          <select id="gateSignupDept" class="filter-select" style="width:100%;">
+            <option value="Student Researcher">Research Scholar / PhD</option>
+            <option value="Computer Science">Computer Science &amp; Engineering</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Electronics">Electronics &amp; Communication</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label style="font-size:12.5px;font-weight:600;">Role</label>
+          <select id="gateSignupRole" class="filter-select" style="width:100%;">
+            <option value="student">Student Applicant</option>
+            <option value="admin">Hostel Administrator</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label style="font-size:12.5px;font-weight:600;">Create Password</label>
+        <input type="password" id="gateSignupPassword" placeholder="Minimum 6 characters" required />
+      </div>
+      <button type="submit" class="btn btn-success btn-full mt-3" style="padding:12px;font-size:14px;font-weight:700;">
+        ✨ Create Account &amp; Enter Dashboard
+      </button>
+    </form>
   </div>
-</header>
+</div>
 
-<div id="toast" class="toast hidden"></div>
+<!-- ════════════════════════════════════════════════════════
+     2. AUTHENTICATED MAIN APPLICATION LAYOUT
+     (Left Sidebar Navigation + Topbar + Content matching Screenshot)
+     ════════════════════════════════════════════════════════ -->
+<div id="mainAppLayout" class="app-layout" style="display:none;">
 
-<main class="main-content">
-
-  <!-- ── 1. DASHBOARD ── -->
-  <section id="tab-dashboard" class="tab-section active">
-    <div class="page-header">
-      <h1>Dashboard</h1>
-      <p>Real-time hostel occupancy overview</p>
+  <!-- ═════════ LEFT SIDEBAR ═════════ -->
+  <aside class="sidebar" id="appSidebar">
+    <!-- Sidebar Brand -->
+    <div class="sidebar-brand">
+      <div class="sidebar-logo-icon">🏢</div>
+      <div class="sidebar-brand-meta">
+        <span class="sidebar-brand-title">HostelHub</span>
+        <span class="sidebar-brand-sub">ROOM &amp; BED ALLOCATION</span>
+      </div>
+      <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Collapse sidebar">◀</button>
     </div>
-    <div class="stats-grid">
-      <div class="stat-card stat-total">
-        <div class="stat-icon">🛏️</div>
-        <div class="stat-body"><div class="stat-value" id="stat-total">—</div><div class="stat-label">Total Beds</div></div>
+
+    <!-- Navigation Scroll Area -->
+    <div class="sidebar-nav-scroll">
+      <!-- Group: MAIN -->
+      <div class="sidebar-nav-group">
+        <div class="sidebar-group-label">MAIN</div>
+        <button class="sidebar-nav-item tab-btn active" data-tab="dashboard" data-title="Dashboard">
+          <span class="sidebar-item-icon">🔲</span>
+          <span class="sidebar-item-label">Dashboard</span>
+        </button>
+        <button class="sidebar-nav-item tab-btn" data-tab="allocate" data-title="Allocate Bed">
+          <span class="sidebar-item-icon">🛏️</span>
+          <span class="sidebar-item-label">Allocate Bed</span>
+          <span class="sidebar-badge" id="sideBadgeAllocate">1,000</span>
+        </button>
+        <button class="sidebar-nav-item tab-btn" data-tab="multi" data-title="Same-Bed Resolution">
+          <span class="sidebar-item-icon">⚔️</span>
+          <span class="sidebar-item-label">Same-Bed Resolution</span>
+          <span class="sidebar-badge" style="background:rgba(239,68,68,0.2);color:#f87171;">⚡</span>
+        </button>
+        <button class="sidebar-nav-item tab-btn" data-tab="blocks" data-title="Hostel Blocks">
+          <span class="sidebar-item-icon">🏢</span>
+          <span class="sidebar-item-label">Hostel Blocks (5)</span>
+          <span class="sidebar-badge">5</span>
+        </button>
+        <button class="sidebar-nav-item tab-btn" data-tab="log" data-title="Allocations Log">
+          <span class="sidebar-item-icon">📋</span>
+          <span class="sidebar-item-label">Allocations Log</span>
+        </button>
+        <button class="sidebar-nav-item tab-btn" data-tab="demo" data-title="Race Simulation">
+          <span class="sidebar-item-icon">🛡️</span>
+          <span class="sidebar-item-label">Race Simulation</span>
+        </button>
+        <button class="sidebar-nav-item tab-btn" data-tab="admin" data-title="Admin Management">
+          <span class="sidebar-item-icon">🛠️</span>
+          <span class="sidebar-item-label">Admin Management</span>
+        </button>
       </div>
-      <div class="stat-card stat-available">
-        <div class="stat-icon">✅</div>
-        <div class="stat-body"><div class="stat-value" id="stat-available">—</div><div class="stat-label">Available</div></div>
+
+      <!-- Group: RESEARCH & ANALYTICS -->
+      <div class="sidebar-nav-group">
+        <div class="sidebar-group-label">RESEARCH &amp; ANALYTICS</div>
+        <button class="sidebar-nav-item tab-btn" data-tab="analytics" data-title="Analytics &amp; Reports">
+          <span class="sidebar-item-icon">📊</span>
+          <span class="sidebar-item-label">Analytics &amp; Reports</span>
+        </button>
+        <a href="/api/analytics/export/audit" target="_blank" class="sidebar-nav-item" style="text-decoration:none;">
+          <span class="sidebar-item-icon">📑</span>
+          <span class="sidebar-item-label">Export Audit &amp; CSV</span>
+        </a>
+        <button class="sidebar-nav-item tab-btn" id="navAIBtn" data-tab="ai" data-title="AI Assistant PRO" style="color:#c084fc;">
+          <span class="sidebar-item-icon">✨</span>
+          <span class="sidebar-item-label">AI Assistant</span>
+          <span class="pro-pill-badge" style="margin-left:auto;">PRO</span>
+        </button>
       </div>
-      <div class="stat-card stat-occupied">
-        <div class="stat-icon">👤</div>
-        <div class="stat-body"><div class="stat-value" id="stat-occupied">—</div><div class="stat-label">Occupied</div></div>
-      </div>
-      <div class="stat-card stat-reserved">
-        <div class="stat-icon">🔒</div>
-        <div class="stat-body"><div class="stat-value" id="stat-reserved">—</div><div class="stat-label">Reserved</div></div>
+
+      <!-- Group: MANAGEMENT -->
+      <div class="sidebar-nav-group">
+        <div class="sidebar-group-label">MANAGEMENT</div>
+        <button class="sidebar-nav-item tab-btn" id="navNotifBtn" data-tab="notif" data-title="Notifications">
+          <span class="sidebar-item-icon">🔔</span>
+          <span class="sidebar-item-label">Notifications</span>
+          <span class="notif-count-pill" id="navNotifCount" style="margin-left:auto;">3</span>
+        </button>
+        <button class="sidebar-nav-item tab-btn" id="navSettingsBtn" data-tab="settings" data-title="Settings">
+          <span class="sidebar-item-icon">⚙️</span>
+          <span class="sidebar-item-label">Settings</span>
+        </button>
+        <button class="sidebar-nav-item tab-btn" data-tab="auth" id="navAuthTab" data-title="My Profile">
+          <span class="sidebar-item-icon">👤</span>
+          <span class="sidebar-item-label">My Profile</span>
+        </button>
       </div>
     </div>
-    <div class="card mt-4">
-      <div class="card-header">Occupancy Rate</div>
-      <div class="card-body">
-        <div class="occupancy-bar-wrap">
-          <div class="occupancy-bar">
-            <div class="occ-segment occ-occupied"  id="bar-occupied"  style="width:0%"></div>
-            <div class="occ-segment occ-reserved"  id="bar-reserved"  style="width:0%"></div>
-            <div class="occ-segment occ-available" id="bar-available" style="width:100%"></div>
-          </div>
-          <div class="occ-legend">
-            <span><i class="dot occ-occupied"></i> Occupied</span>
-            <span><i class="dot occ-reserved"></i> Reserved</span>
-            <span><i class="dot occ-available"></i> Available</span>
-          </div>
+
+    <!-- Bottom User Profile in Sidebar -->
+    <div class="sidebar-user-footer" id="sidebarUserFooter" title="Click to view Account &amp; Bed Info">
+      <div class="sidebar-user-avatar">
+        <img src="/static/img/avatar.png" id="sidebarUserAvatarImg" alt="User Avatar" />
+      </div>
+      <div class="sidebar-user-meta">
+        <span class="sidebar-user-name" id="sidebarUserName">Sundram Kumar</span>
+        <span class="sidebar-user-sub" id="sidebarUserSubTitle">Computer Science Scholar</span>
+      </div>
+      <button class="sidebar-logout-btn" id="btnSidebarLogout" title="Sign Out">🚪</button>
+    </div>
+  </aside>
+
+  <!-- ═════════ MAIN WRAPPER ═════════ -->
+  <div class="main-wrapper">
+    <!-- Top Header Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        <div class="topbar-breadcrumb">
+          <span class="breadcrumb-root">HostelHub</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current" id="headerBreadcrumbCurrent">Dashboard</span>
         </div>
       </div>
-    </div>
-    <div class="concept-banner mt-4">
-      <div class="concept-icon">🛡️</div>
-      <div class="concept-text" style="flex:1;">
-        <div style="font-size:11px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Product 5 Core Problem Statement</div>
-        <strong style="font-size:15px;line-height:1.4;display:block;margin-bottom:6px;">• Multiple applicants request the same available room/bed. How can duplicate allocation be prevented?</strong>
-        <p style="margin-bottom:10px;">By enforcing <strong>Mutual Exclusion (Mutex Lock)</strong> over the critical section: <code>Check availability &rarr; Reserve bed &rarr; Write occupant record</code>. When Applicant 1 locks the bed, Applicant 2 is blocked until release, at which point the bed is already occupied &amp; duplicate booking is 100% prevented.</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-primary btn-sm" onclick="document.querySelector('[data-tab=multi]').click()">⚔️ Test Same-Bed Duplicate Prevention</button>
-          <button class="btn btn-outline btn-sm" onclick="document.querySelector('[data-tab=demo]').click()">🛡️ Open Race Simulation</button>
+
+      <div class="topbar-right">
+        <!-- Quick Search -->
+        <div class="topbar-search">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="topbarSearchInput" placeholder="Search rooms, beds, applicants..." />
+          <span class="search-kbd">Ctrl K</span>
         </div>
+
+        <!-- + Allocate Bed Action Button -->
+        <button class="topbar-create-btn" onclick="document.querySelector('[data-tab=allocate]').click()">
+          <span>➕ Allocate</span>
+        </button>
+
+        <!-- MongoDB status pill -->
+        <span class="mongo-status-pill" id="headerMongoPill" title="Connected to MongoDB 9.0 on localhost:27017/hostel_db">
+          <span class="mongo-dot"></span> 🍃 MongoDB 9.0 Active
+        </span>
+
+        <!-- Action Icons -->
+        <div class="topbar-icons-group">
+          <button class="header-icon-btn" id="headerBellBtn" title="View System Notifications">
+            <span class="header-notif-dot" id="headerNotifDot"></span>🔔
+          </button>
+          <button class="header-icon-btn" id="btnThemeToggle" title="Toggle Light / Dark Theme">
+            ☀️
+          </button>
+          <button class="header-icon-btn" id="btnHelpGuide" title="University OS Concurrency Lab Guide">
+            ❓
+          </button>
+          <!-- User Avatar circle ONLY (no text, matching screenshot!) -->
+          <div class="header-avatar-circle" id="headerAvatarCircleBtn" title="My Profile" onclick="document.querySelector('[data-tab=auth]').click()">
+            <img src="/static/img/avatar.png" id="headerUserAvatarImg" alt="User Avatar" />
+          </div>
+        </div>
+
+        <!-- Reset Button at Corner -->
+        <button class="reset-corner-btn" id="resetBtn" title="Reset all hostel data and allocations">
+          🔄 Reset
+        </button>
       </div>
-    </div>
-  </section>
+    </header>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <main class="page-content">
+
+      <!-- ── 1. DASHBOARD ── -->
+      <section id="tab-dashboard" class="tab-section active">
+        <!-- Dashboard Greeting Row (Matching User's Uploaded Image 100%) -->
+        <div class="dashboard-greeting-row">
+          <div class="greeting-text-area">
+            <div class="greeting-title">
+              <span id="dashGreetingPrefix">Good morning</span>, <span id="dashGreetingName">Sundram</span> <span style="font-size:24px;">👋</span>
+            </div>
+            <div class="greeting-sub">
+              Here's what's happening with hostel occupancy and thread synchronization today.
+            </div>
+          </div>
+          <div class="greeting-actions-area">
+            <button class="btn btn-primary btn-sm" onclick="document.querySelector('[data-tab=allocate]').click()">
+              ➕ Allocate Bed
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="document.querySelector('[data-tab=multi]').click()">
+              ⚡ Same-Bed Test
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="document.querySelector('[data-tab=demo]').click()">
+              🛡️ Race Sim
+            </button>
+            <button class="btn btn-outline btn-sm" id="btnGreetingAskAI" style="border-color:rgba(192,132,252,0.4);color:#c084fc;">
+              ✨ Ask AI
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Cards (Matching Screenshot Layout) -->
+        <div class="kpi-cards-grid">
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">TOTAL HOSTEL CAPACITY</span>
+              <span class="kpi-icon">🛏️</span>
+            </div>
+            <div class="kpi-value" id="stat-total">—</div>
+            <div class="kpi-trend positive">↗ 5 Residential Blocks (A-E)</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">AVAILABLE BEDS</span>
+              <span class="kpi-icon">✅</span>
+            </div>
+            <div class="kpi-value" id="stat-available">—</div>
+            <div class="kpi-trend positive">↗ 100% Ready for Allocation</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">OCCUPIED BEDS</span>
+              <span class="kpi-icon">👤</span>
+            </div>
+            <div class="kpi-value" id="stat-occupied">—</div>
+            <div class="kpi-trend neutral">↗ 0% Active Occupancy</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">DUPLICATE PREVENTION RATE</span>
+              <span class="kpi-icon">🔒</span>
+            </div>
+            <div class="kpi-value" id="stat-reserved">100%</div>
+            <div class="kpi-trend positive">⚠ 0 Collisions (Mutex + Semaphore)</div>
+          </div>
+        </div>
+
+        <!-- Concurrency Health Score & Diagnostics (Matching Screenshot: Research Health Score) -->
+        <div class="health-score-container mt-4">
+          <div class="health-score-left">
+            <div class="health-score-circle">
+              <span class="score-num">100</span>
+              <span class="score-sub">/ 100</span>
+            </div>
+            <div class="health-score-bars">
+              <div class="health-meta-head">
+                <span style="font-weight:700;font-size:14px;color:var(--text);">📈 Concurrency Health Score</span>
+                <span class="health-trend-tag">↗ +4.2% Optimal Trajectory</span>
+              </div>
+              <div class="health-progress-row">
+                <div class="health-progress-item">
+                  <div class="hp-label"><span>Mutex Synchronization</span><span>100%</span></div>
+                  <div class="hp-track"><div class="hp-bar" style="width:100%;background:#8b5cf6;"></div></div>
+                </div>
+                <div class="health-progress-item">
+                  <div class="hp-label"><span>Semaphore Permit Pool</span><span>100%</span></div>
+                  <div class="hp-track"><div class="hp-bar" style="width:100%;background:#10b981;"></div></div>
+                </div>
+                <div class="health-progress-item">
+                  <div class="hp-label"><span>Critical Section Latency</span><span>~0.85 ms</span></div>
+                  <div class="hp-track"><div class="hp-bar" style="width:95%;background:#f59e0b;"></div></div>
+                </div>
+                <div class="health-progress-item">
+                  <div class="hp-label"><span>Duplicate Prevention Rate</span><span>100%</span></div>
+                  <div class="hp-track"><div class="hp-bar" style="width:100%;background:#06b6d4;"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="health-score-right">
+            <div class="diag-head"><span style="color:#c084fc;">✨ AI Health Diagnostic</span></div>
+            <p class="diag-body">
+              Thread synchronization is operating with zero race conditions. Mutual exclusion locks serialize critical sections for single-bed requests, while Counting Semaphore throttles bulk applicants.
+            </p>
+            <div class="diag-badge"><span class="mongo-dot"></span> Zero critical collision blockers</div>
+          </div>
+        </div>
+
+        <!-- AI Concurrency Insight Banner (Matching Screenshot: AI Research Insight) -->
+        <div class="ai-insight-box mt-4">
+          <div class="ai-insight-left">
+            <div class="ai-insight-icon">✨</div>
+            <div>
+              <div class="ai-insight-title">
+                <span>AI Concurrency Insight</span>
+                <span class="badge badge-purple" style="font-size:10px;margin-left:6px;">AUTOMATED DIAGNOSTIC</span>
+              </div>
+              <p class="ai-insight-text">
+                "Mutual Exclusion (Mutex) is currently active on single bed reservations, while a Counting Semaphore regulates batch multi-bed requests. All allocations are 100% thread-safe with zero collisions."
+              </p>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm ai-advisor-trigger-btn" id="btnOpenAIAdvisor">
+            Open AI Advisor &rarr;
+          </button>
+        </div>
+
+        <!-- Occupancy Bar & Legend -->
+        <div class="card mt-4">
+          <div class="card-header">Occupancy Rate</div>
+          <div class="card-body">
+            <div class="occupancy-bar-wrap">
+              <div class="occupancy-bar">
+                <div class="occ-segment occ-occupied"  id="bar-occupied"  style="width:0%"></div>
+                <div class="occ-segment occ-reserved"  id="bar-reserved"  style="width:0%"></div>
+                <div class="occ-segment occ-available" id="bar-available" style="width:100%"></div>
+              </div>
+              <div class="occ-legend">
+                <span><i class="dot occ-occupied"></i> Occupied</span>
+                <span><i class="dot occ-reserved"></i> Reserved</span>
+                <span><i class="dot occ-available"></i> Available</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 5 Core Problem Statement -->
+        <div class="concept-banner mt-4">
+          <div class="concept-icon">🛡️</div>
+          <div class="concept-text" style="flex:1;">
+            <div style="font-size:11px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Product 5 Core Problem Statement</div>
+            <strong style="font-size:15px;line-height:1.4;display:block;margin-bottom:6px;">• Multiple applicants request the same available room/bed. How can duplicate allocation be prevented?</strong>
+            <p style="margin-bottom:10px;">By enforcing <strong>Mutual Exclusion (Mutex Lock)</strong> over the critical section: <code>Check availability &rarr; Reserve bed &rarr; Write occupant record</code>. When Applicant 1 locks the bed, Applicant 2 is blocked until release, at which point the bed is already occupied &amp; duplicate booking is 100% prevented.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary btn-sm" onclick="document.querySelector('[data-tab=multi]').click()">⚔️ Test Same-Bed Duplicate Prevention</button>
+              <button class="btn btn-outline btn-sm" onclick="document.querySelector('[data-tab=demo]').click()">🛡️ Open Race Simulation</button>
+            </div>
+          </div>
+        </div>
+      </section>
 
   <!-- ── 2. SINGLE ALLOCATION ── -->
   <section id="tab-allocate" class="tab-section">
@@ -130,13 +482,23 @@
                 <option value="C">Block C — PG / Research (200 Beds)</option>
                 <option value="D">Block D — International Male (200 Beds)</option>
                 <option value="E">Block E — International Female (200 Beds)</option>
-              </select>
+               <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Chemical Engineering">Chemical Engineering</option>
+            <option value="Business Administration">Business Administration</option>
+            </select>
             </div>
             <div class="form-group">
               <label>Preferred Room <span class="optional">(optional)</span></label>
               <select id="f-room">
                 <option value="">Any room in selected block</option>
-              </select>
+               <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Chemical Engineering">Chemical Engineering</option>
+            <option value="Business Administration">Business Administration</option>
+            </select>
             </div>
             <button type="submit" class="btn btn-primary btn-full" id="allocBtn">🛏️ Allocate Bed</button>
           </form>
@@ -232,7 +594,12 @@
                 <option value="C">Block C (PG/Mixed)</option>
                 <option value="D">Block D (Intl Male)</option>
                 <option value="E">Block E (Intl Female)</option>
-              </select>
+               <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Chemical Engineering">Chemical Engineering</option>
+            <option value="Business Administration">Business Administration</option>
+            </select>
             </div>
             <div id="bedRangePreviewText" style="font-size:11px;color:var(--primary);margin-top:6px;font-weight:600;">Target: 1 Bed (A01-1) under contention</div>
           </div>
@@ -416,7 +783,12 @@
               <select id="massPolicySelect" class="filter-select" style="width:100%;font-size:12px;">
                 <option value="strict">🛡️ Strict: If requested bed is taken &rarr; Block Duplicate</option>
                 <option value="auto_divert">🔀 Auto-Divert: If requested bed taken &rarr; Allocate next free bed</option>
-              </select>
+               <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Chemical Engineering">Chemical Engineering</option>
+            <option value="Business Administration">Business Administration</option>
+            </select>
             </div>
 
             <button class="btn btn-primary btn-full mt-2" id="massUploadSubmitBtn" disabled>
@@ -456,7 +828,12 @@
               <select id="genContentionSelect" class="filter-select" style="width:100%;font-size:12px;">
                 <option value="high">💥 Heavy Contention: Multiple applicants request the SAME beds</option>
                 <option value="random">🎲 Random Spread: Distributed across all 5 blocks &amp; rooms</option>
-              </select>
+               <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Chemical Engineering">Chemical Engineering</option>
+            <option value="Business Administration">Business Administration</option>
+            </select>
             </div>
 
             <div style="background:var(--bg-card);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-top:14px;">
@@ -988,6 +1365,187 @@
     </div>
   </section>
 
+  <!-- ── 9. DEDICATED SEPARATE SIGN IN / SIGN UP PAGE ── -->
+  <section id="tab-auth" class="tab-section">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
+      <div>
+        <div class="qhc-badge" style="background:rgba(59,130,246,0.15); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); padding:4px 14px; border-radius:20px; font-size:12px; font-weight:800; display:inline-block; margin-bottom:10px;">
+          AUTHENTICATION &amp; USER PORTAL
+        </div>
+        <h1 style="font-size:26px;font-weight:800;letter-spacing:-0.02em;margin-top:4px;">
+          🔐 HostelHub Access Portal
+        </h1>
+        <p style="font-size:13.5px;margin-top:6px;max-width:850px;color:var(--text-muted);">
+          Dedicated authentication portal for university students and administrators. Access your allocated bed, manage student credentials, or register a new campus account.
+        </p>
+      </div>
+    </div>
+
+    <!-- GUEST AUTH VIEW (SEPARATE SIGN IN & SIGN UP CARDS) -->
+    <div id="authGuestView">
+      <div class="auth-page-grid">
+        
+        <!-- CARD 1: SIGN IN -->
+        <div class="auth-page-card">
+          <div class="auth-page-header">
+            <div class="auth-page-title">
+              <span>🔑 Sign In to Your Account</span>
+            </div>
+            <div class="auth-page-subtitle">
+              Enter your student ID or email to access your hostel room &amp; bed assignment.
+            </div>
+          </div>
+
+          <form id="pageLoginForm">
+            <div class="form-group">
+              <label>Email Address or Student / Admin ID</label>
+              <input type="text" id="pageLoginIdentifier" placeholder="e.g. sundram@hostel.edu or CS2026001" required />
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="pageLoginPassword" placeholder="Enter your password" required />
+            </div>
+            <button type="submit" class="btn btn-primary btn-full mt-3" style="padding:12px;font-size:14px;font-weight:700;">
+              🔓 Sign In to HostelHub
+            </button>
+
+            <!-- 1-Click Demo Credentials -->
+            <div class="auth-demo-credentials" style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--border);">
+              <div style="font-weight:700;color:var(--text);margin-bottom:8px;font-size:12px;">⚡ 1-Click Demo Quick Logins:</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <button type="button" class="btn btn-outline btn-xs" id="btnPageFillStudent" style="justify-content:flex-start;padding:8px 12px;font-size:12px;">
+                  👨‍🎓 <b>Student Demo:</b> sundram@hostel.edu (Pass: password123)
+                </button>
+                <button type="button" class="btn btn-outline btn-xs" id="btnPageFillAdmin" style="justify-content:flex-start;padding:8px 12px;font-size:12px;">
+                  🛠️ <b>Warden / Admin Demo:</b> admin@hostel.edu (Pass: admin)
+                </button>
+                <button type="button" class="btn btn-outline btn-xs" id="btnPageFillStudent2" style="justify-content:flex-start;padding:8px 12px;font-size:12px;">
+                  👩‍🎓 <b>Student Demo:</b> priya@hostel.edu (Pass: password123)
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- CARD 2: SIGN UP -->
+        <div class="auth-page-card">
+          <div class="auth-page-header">
+            <div class="auth-page-title">
+              <span>📝 Create New Account (Sign Up)</span>
+            </div>
+            <div class="auth-page-subtitle">
+              New to HostelHub? Register your student profile to request room &amp; bed allocations.
+            </div>
+          </div>
+
+          <form id="pageSignupForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="pageSignupName" placeholder="e.g. Sundram Kumar" required />
+              </div>
+              <div class="form-group">
+                <label>Student ID / Reg No</label>
+                <input type="text" id="pageSignupStudentId" placeholder="e.g. CS2026042" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>University Email</label>
+              <input type="email" id="pageSignupEmail" placeholder="e.g. student@hostel.edu" required />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Academic Department</label>
+                <select id="pageSignupDept" class="filter-select" style="width:100%;font-size:12.5px;padding:9px 12px;">
+                  <option value="Computer Science">Computer Science &amp; Engineering</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Electronics">Electronics &amp; Comm Engineering</option>
+                  <option value="Mechanical">Mechanical Engineering</option>
+                  <option value="Civil">Civil Engineering</option>
+                  <option value="Research / PhD">Research / PhD Scholar</option>
+ 
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Chemical Engineering">Chemical Engineering</option>
+            <option value="Business Administration">Business Administration</option>
+            </select>
+              </div>
+              <div class="form-group">
+                <label>Portal Role</label>
+                <select id="pageSignupRole" class="filter-select" style="width:100%;font-size:12.5px;padding:9px 12px;">
+                  <option value="student">Student (Hostel Applicant)</option>
+                  <option value="admin">Hostel Warden / Administrator</option>
+ 
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Chemical Engineering">Chemical Engineering</option>
+            <option value="Business Administration">Business Administration</option>
+            </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Create Password</label>
+              <input type="password" id="pageSignupPassword" placeholder="Minimum 6 characters" required />
+            </div>
+            <button type="submit" class="btn btn-success btn-full mt-3" style="padding:12px;font-size:14px;font-weight:700;">
+              ✨ Register Account &amp; Sign In
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Security & OS Mutex Highlight Banner -->
+      <div class="card mt-4" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:24px;">🛡️</span>
+          <div>
+            <div style="font-weight:700;font-size:15px;color:#fff;">Protected by Mutual Exclusion &amp; Counting Semaphores</div>
+            <div style="font-size:12.5px;color:var(--text-muted);margin-top:2px;">
+              Every authenticated account is guaranteed 1-to-1 bed mapping. When concurrent applicants submit for the same bed or capacity pools, Mutex locks and Counting Semaphores ensure 100% duplicate prevention.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGGED IN USER PROFILE VIEW -->
+    <div id="authUserProfileView" style="display:none;">
+      <div class="card mb-4" style="background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.98)); border-left: 5px solid var(--primary); padding:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 4px 16px rgba(59,130,246,0.4);">
+              👤
+            </div>
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <h2 id="profileUserName" style="font-size:22px;font-weight:800;color:#fff;">Sundram Kumar</h2>
+                <span id="profileUserRole" class="user-role-badge">STUDENT</span>
+              </div>
+              <div style="font-size:13px;color:var(--text-muted);margin-top:2px;">
+                <span id="profileUserEmail">sundram@hostel.edu</span> · Student ID: <strong id="profileUserId" style="color:var(--primary);font-family:monospace;">CS2026001</strong>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-outline btn-sm" id="btnProfileLogout">Sign Out</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- User's Hostel Bed Status Card -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-weight:700;font-size:15px;">🛏️ My Bed Allocation Status</span>
+          <span class="badge" id="profileBedBadge">Active</span>
+        </div>
+        <div class="card-body" id="profileBedBody" style="padding:24px;">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Floating OS & Mutex Assistant Bot -->
   <button class="floating-bot-btn" id="floatingBotBtn" title="Hostel Hub OS &amp; Mutex Assistant">
     🤖
@@ -1021,6 +1579,7 @@
   </div>
 
 </main>
+</div><!-- /.main-wrapper -->
 
 <!-- ── CHECKOUT MODAL ── -->
 <div id="checkoutModal" class="modal-overlay hidden">
@@ -1178,9 +1737,202 @@
       </form>
     </div>
   </div>
+</div><!-- /#mainAppLayout -->
+
+<!-- ════════════════════════════════════════════════════════
+     3. NOTIFICATIONS MODAL (MATCHING USER IMAGES)
+     ════════════════════════════════════════════════════════ -->
+<div id="notificationsModal" class="modal-overlay" style="display:none;">
+  <div class="notif-modal-card">
+    <div class="modal-header" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:20px;">🔔</span>
+        <span style="font-weight:700;font-size:15px;">System Notifications</span>
+        <span class="badge badge-err" id="notifModalBadge" style="font-size:11px;">3 New</span>
+      </div>
+      <button class="modal-close" id="closeNotifModal">✕</button>
+    </div>
+    <div id="notifListContainer">
+      <div class="notif-list-item unread">
+        <div class="notif-item-icon">🚦</div>
+        <div style="flex:1;">
+          <div class="notif-item-title">Counting Semaphore Pool Active</div>
+          <div class="notif-item-desc">Counting Semaphore(100) permits active for multi-bed high-throughput allocation. Over-allocation strictly prevented.</div>
+          <div class="notif-item-time">Just now · Concurrency Engine</div>
+        </div>
+      </div>
+      <div class="notif-list-item unread">
+        <div class="notif-item-icon">🔒</div>
+        <div style="flex:1;">
+          <div class="notif-item-title">Mutual Exclusion (Mutex) Engaged</div>
+          <div class="notif-item-desc">Critical sections protected via binary lock. 0 duplicate bookings detected across all applicant threads.</div>
+          <div class="notif-item-time">5m ago · OS Lab Core</div>
+        </div>
+      </div>
+      <div class="notif-list-item unread">
+        <div class="notif-item-icon">🍃</div>
+        <div style="flex:1;">
+          <div class="notif-item-title">MongoDB 9.0 Database Synchronized</div>
+          <div class="notif-item-desc">Allocations and authenticated user records persisted to mongodb://localhost:27017/hostel_db.</div>
+          <div class="notif-item-time">12m ago · Localhost Database</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.02);">
+      <button class="btn btn-outline btn-xs" id="btnMarkAllNotifsRead">✓ Mark all as read</button>
+      <button class="btn btn-primary btn-xs" id="btnCloseNotifFooter">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     4. SETTINGS MODAL (MATCHING USER IMAGES)
+     ════════════════════════════════════════════════════════ -->
+<div id="settingsModal" class="modal-overlay" style="display:none;">
+  <div class="settings-modal-card">
+    <div class="modal-header" style="padding-bottom:14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:20px;">⚙️</span>
+        <span style="font-weight:700;font-size:16px;">HostelHub System Settings</span>
+      </div>
+      <button class="modal-close" id="closeSettingsModal">✕</button>
+    </div>
+
+    <div style="padding:16px 0;display:flex;flex-direction:column;gap:18px;">
+      <!-- Theme Selection -->
+      <div>
+        <label style="font-size:13px;font-weight:700;color:var(--text);">Interface Color Theme</label>
+        <div class="settings-theme-cards">
+          <div class="settings-theme-option active" id="themeOptDark" onclick="applyTheme('dark')">
+            <div style="font-size:24px;margin-bottom:6px;">🌙</div>
+            <div style="font-weight:700;font-size:13px;">Dark Slate</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Obsidian Blue &amp; Slate</div>
+          </div>
+          <div class="settings-theme-option" id="themeOptLight" onclick="applyTheme('light')">
+            <div style="font-size:24px;margin-bottom:6px;">☀️</div>
+            <div style="font-weight:700;font-size:13px;">Light Crisp</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Clean White &amp; Slate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MongoDB Integration Status -->
+      <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:14px 16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">🍃</span>
+            <div>
+              <div style="font-weight:700;font-size:13px;color:#22c55e;">MongoDB 9.0 Database Engine</div>
+              <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;" id="settingsMongoDetails">
+                Host: mongodb://localhost:27017 · DB: hostel_db
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-xs" id="btnTestMongoPing">⚡ Ping</button>
+        </div>
+      </div>
+
+      <!-- Concurrency Tuning -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:12px;font-weight:600;">Semaphore Permit Pool</label>
+          <input type="number" id="settingSemaphorePool" value="100" min="10" max="1000" style="padding:8px 10px;font-size:13px;" />
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:12px;font-weight:600;">Mutex Timeout (sec)</label>
+          <input type="number" id="settingMutexTimeout" value="5.0" step="0.5" min="1" max="30" style="padding:8px 10px;font-size:13px;" />
+        </div>
+      </div>
+    </div>
+
+    <div style="padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn btn-outline btn-sm" id="btnCancelSettings">Close</button>
+      <button class="btn btn-primary btn-sm" id="btnSaveSettings">Save Preferences</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     5. UNIVERSITY OS LAB HELP & CONCURRENCY GUIDE MODAL
+     ════════════════════════════════════════════════════════ -->
+<div id="helpGuideModal" class="modal-overlay" style="display:none;">
+  <div class="settings-modal-card" style="max-width:580px;">
+    <div class="modal-header" style="padding-bottom:14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:20px;">❓</span>
+        <span style="font-weight:700;font-size:16px;">University OS Lab Concurrency Guide</span>
+      </div>
+      <button class="modal-close" id="closeHelpModal">✕</button>
+    </div>
+    <div style="padding:16px 0;display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.5;">
+      <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:10px;padding:12px 14px;">
+        <strong style="color:#60a5fa;">Problem Statement:</strong> Multiple students race to allocate the same available bed simultaneously. Without synchronization, two students get booked into the exact same bed (double allocation).
+      </div>
+      <div>
+        <strong style="color:var(--text);">🔒 Single-Bed Contention (Mutex Lock):</strong>
+        <p style="color:var(--text-muted);margin-top:2px;">
+          For 1 specific bed, a binary <code>threading.Lock()</code> wraps the Critical Section (<code>Check Availability &rarr; Reserve Bed &rarr; Commit Occupant Record</code>). Exactly 1 thread enters, all competitors are blocked.
+        </p>
+      </div>
+      <div>
+        <strong style="color:var(--text);">🚦 Multi-Bed Capacity (Counting Semaphore):</strong>
+        <p style="color:var(--text-muted);margin-top:2px;">
+          For &gt; 2 beds (e.g. 100 beds vs 150 applicants), a <code>threading.Semaphore(100)</code> manages finite permits. Exactly 100 applicants acquire permits for 100 unique beds; the 50 overflow requests are safely blocked when count hits 0.
+        </p>
+      </div>
+    </div>
+    <div style="padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
+      <button class="btn btn-primary btn-sm" id="btnCloseHelpFooter">Understood</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     6. AI ASSISTANT PRO DRAWER (MATCHING USER IMAGES 4 & 5)
+     ════════════════════════════════════════════════════════ -->
+<div id="aiProDrawer" class="ai-pro-drawer">
+  <div class="ai-pro-header">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:22px;color:#c084fc;">✨</span>
+      <div>
+        <div style="font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px;">
+          AI Assistant <span class="pro-pill-badge">PRO</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);">OS Concurrency &amp; System Intelligence</div>
+      </div>
+    </div>
+    <button class="modal-close" id="closeAIProDrawer">✕</button>
+  </div>
+  <div class="ai-pro-body">
+    <div class="ai-response-bubble">
+      👋 Hello <strong id="aiGreetingName">Sundram</strong>! I am your AI Concurrency Assistant. I can help explain Mutex locks vs Counting Semaphores, diagnose race conditions, or inspect MongoDB persistence state.
+    </div>
+    <div style="font-size:11.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;">
+      Suggested OS Lab Prompts:
+    </div>
+    <div class="ai-chip-list">
+      <button class="ai-prompt-chip" onclick="askAIPrompt('Why does Mutex guarantee 100% duplicate prevention on 1 bed?')">
+        🔒 How does Mutex prevent duplicate bed bookings?
+      </button>
+      <button class="ai-prompt-chip" onclick="askAIPrompt('Why does 150 applicants on 100 beds require Counting Semaphore?')">
+        🚦 Why use Counting Semaphore for 100 beds vs 150 applicants?
+      </button>
+      <button class="ai-prompt-chip" onclick="askAIPrompt('Inspect MongoDB database schema and storage consistency')">
+        🍃 Inspect MongoDB database collections &amp; consistency
+      </button>
+      <button class="ai-prompt-chip" onclick="askAIPrompt('Analyze current hostel occupancy and contention risk')">
+        📊 Analyze current occupancy &amp; contention risk
+      </button>
+    </div>
+    <div id="aiChatOutput" style="display:flex;flex-direction:column;gap:10px;margin-top:6px;"></div>
+  </div>
+  <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:8px;">
+    <input type="text" id="aiCustomInput" placeholder="Ask about Mutex, Semaphores, or DB..." style="flex:1;padding:9px 12px;font-size:12.5px;border-radius:8px;" />
+    <button class="btn btn-primary btn-sm" id="btnSendAI">Send</button>
+  </div>
 </div>
 
 <script src="/static/js/chart.umd.min.js"></script>
-<script src="/static/js/main.js"></script>
+<script src="/static/js/main.js?v=20261118_v3"></script>
 </body>
 </html>

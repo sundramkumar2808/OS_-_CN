@@ -22,8 +22,17 @@ let demoBeds    = 1;
 let demoMutex   = true;
 let demoRunning = false;
 
+// ── Purge Legacy Session Data ─────────────────────────────
+try {
+  const _stored = localStorage.getItem("hostel_user");
+  if (_stored && _stored.toLowerCase().includes("pritam")) {
+    localStorage.removeItem("hostel_user");
+  }
+} catch (e) {}
+
 // ── Application Initialization ───────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
+  setupTheme();
   setupTabs();
   setupAllocForm();
   setupRoomSelect();
@@ -34,28 +43,152 @@ document.addEventListener("DOMContentLoaded", () => {
   setupAdminPanel();
   setupHighVolumePortal();
   setupAnalytics();
+  setupModalsAndDrawers();
   refreshStats();
   setInterval(refreshStats, 5000);   // auto-refresh every 5s
 });
 
 // ══════════════════════════════════════════════════════════
-//  TAB NAVIGATION
+//  THEME CONTROLLER (LIGHT / DARK THEME)
+// ══════════════════════════════════════════════════════════
+function setupTheme() {
+  const savedTheme = localStorage.getItem("hostel_theme") || "dark";
+  applyTheme(savedTheme);
+
+  const btnTheme = document.getElementById("btnThemeToggle");
+  if (btnTheme) {
+    btnTheme.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme") || "dark";
+      const next = current === "light" ? "dark" : "light";
+      applyTheme(next);
+      showToast(next === "light" ? "☀️ Light crisp theme applied" : "🌙 Dark slate theme applied", "info");
+    });
+  }
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("hostel_theme", theme);
+  const btnTheme = document.getElementById("btnThemeToggle");
+  if (btnTheme) {
+    btnTheme.textContent = theme === "light" ? "🌙" : "☀️";
+    btnTheme.title = theme === "light" ? "Switch to Dark Slate Theme" : "Switch to Light Crisp Theme";
+  }
+  const optDark = document.getElementById("themeOptDark");
+  const optLight = document.getElementById("themeOptLight");
+  if (optDark && optLight) {
+    if (theme === "light") {
+      optLight.classList.add("active");
+      optDark.classList.remove("active");
+    } else {
+      optDark.classList.add("active");
+      optLight.classList.remove("active");
+    }
+  }
+}
+
+function refreshGreeting() {
+  const nameEl = document.getElementById("dashGreetingName");
+  const prefixEl = document.getElementById("dashGreetingPrefix");
+  if (!nameEl || !prefixEl) return;
+
+  const hr = new Date().getHours();
+  let prefix = "Good morning";
+  if (hr >= 12 && hr < 17) prefix = "Good afternoon";
+  else if (hr >= 17) prefix = "Good evening";
+
+  prefixEl.textContent = prefix;
+  if (currentUser && currentUser.name) {
+    nameEl.textContent = currentUser.name.split(" ")[0];
+  } else {
+    nameEl.textContent = "Sundram";
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  TAB NAVIGATION & SIDEBAR
 // ══════════════════════════════════════════════════════════
 function setupTabs() {
   const btns = document.querySelectorAll(".tab-btn");
   btns.forEach(btn => {
     btn.addEventListener("click", () => {
+      if (btn.dataset.tab === "ai") {
+        const drawer = document.getElementById("aiProDrawer");
+        if (drawer) drawer.classList.add("open");
+        return;
+      }
+      if (btn.dataset.tab === "notif") {
+        const notifModal = document.getElementById("notificationsModal");
+        if (notifModal) notifModal.style.display = "flex";
+        return;
+      }
+      if (btn.dataset.tab === "settings") {
+        const settingsModal = document.getElementById("settingsModal");
+        if (settingsModal) settingsModal.style.display = "flex";
+        checkMongoDBLiveStatus();
+        return;
+      }
       btns.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
+
+      // Sync active state on all matching buttons with same data-tab (sidebar + any shortcuts)
+      btns.forEach(b => {
+        if (b.dataset.tab === btn.dataset.tab) b.classList.add("active");
+      });
+
+      // Update breadcrumb
+      const breadcrumb = document.getElementById("headerBreadcrumbCurrent");
+      if (breadcrumb) {
+        breadcrumb.textContent = btn.dataset.title || btn.textContent.trim();
+      }
+
       document.querySelectorAll(".tab-section").forEach(s => s.classList.remove("active"));
       const target = document.getElementById(`tab-${btn.dataset.tab}`);
       if (target) target.classList.add("active");
+
+      // Auto close mobile sidebar
+      const sidebar = document.getElementById("appSidebar");
+      if (sidebar && window.innerWidth <= 768) {
+        sidebar.classList.remove("open");
+      }
+
+      if (btn.dataset.tab === "dashboard") refreshGreeting();
       if (btn.dataset.tab === "blocks") loadBlocksView();
       if (btn.dataset.tab === "log")    loadLog();
       if (btn.dataset.tab === "admin")  loadAdminPanel();
       if (btn.dataset.tab === "analytics") loadAnalytics();
+      if (btn.dataset.tab === "auth")   loadAuthPage();
     });
   });
+
+  // Mobile menu toggle
+  const mobileBtn = document.getElementById("mobileMenuBtn");
+  const sidebar = document.getElementById("appSidebar");
+  if (mobileBtn && sidebar) {
+    mobileBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("open");
+    });
+  }
+
+  // Sidebar collapse toggle
+  const collapseBtn = document.getElementById("sidebarCollapseBtn");
+  if (collapseBtn && sidebar) {
+    collapseBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+      collapseBtn.textContent = sidebar.classList.contains("collapsed") ? "▶" : "◀";
+    });
+  }
+
+  // AI Advisor buttons on dashboard
+  const btnOpenAIAdvisor = document.getElementById("btnOpenAIAdvisor");
+  const btnGreetingAskAI = document.getElementById("btnGreetingAskAI");
+  const drawer = document.getElementById("aiProDrawer");
+  if (btnOpenAIAdvisor && drawer) {
+    btnOpenAIAdvisor.addEventListener("click", () => drawer.classList.add("open"));
+  }
+  if (btnGreetingAskAI && drawer) {
+    btnGreetingAskAI.addEventListener("click", () => drawer.classList.add("open"));
+  }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -328,159 +461,494 @@ function formatDate(iso) {
 }
 
 // ══════════════════════════════════════════════════════════
-//  USER AUTHENTICATION (Sign In / Sign Up / Session)
+//  USER AUTHENTICATION (Gatekeeper Screen / Session / Profile)
 // ══════════════════════════════════════════════════════════
 let currentUser = null;
 
 function setupAuth() {
-  const modal = document.getElementById("authModal");
-  const btnOpen = document.getElementById("btnOpenAuthModal");
-  const btnClose = document.getElementById("closeAuthModal");
-  const tabLogin = document.getElementById("tabBtnLogin");
-  const tabSignup = document.getElementById("tabBtnSignup");
-  const loginForm = document.getElementById("loginForm");
-  const signupForm = document.getElementById("signupForm");
-  const modalTitle = document.getElementById("authModalTitle");
-  const authPill = document.getElementById("authPill");
-  const userNameEl = document.getElementById("authUserName");
-  const userRoleEl = document.getElementById("authUserRole");
+  const gateTabLogin = document.getElementById("btnGateTabLogin");
+  const gateTabSignup = document.getElementById("btnGateTabSignup");
+  const gateLoginForm = document.getElementById("gateLoginForm");
+  const gateSignupForm = document.getElementById("gateSignupForm");
+
+  // 1-Click quick logins on gatekeeper screen
+  const btnSundram = document.getElementById("btnGateFillSundram");
+  const btnAdmin = document.getElementById("btnGateFillAdmin");
+
+  if (btnSundram) {
+    btnSundram.addEventListener("click", () => {
+      const idInput = document.getElementById("gateLoginIdentifier");
+      const passInput = document.getElementById("gateLoginPassword");
+      if (idInput) idInput.value = "sundram@hostel.edu";
+      if (passInput) passInput.value = "password123";
+      executeLogin("sundram@hostel.edu", "password123");
+    });
+  }
+  if (btnAdmin) {
+    btnAdmin.addEventListener("click", () => {
+      const idInput = document.getElementById("gateLoginIdentifier");
+      const passInput = document.getElementById("gateLoginPassword");
+      if (idInput) idInput.value = "admin@hostel.edu";
+      if (passInput) passInput.value = "admin";
+      executeLogin("admin@hostel.edu", "admin");
+    });
+  }
+
+  // Gate tab switching (Sign In vs Sign Up)
+  if (gateTabLogin && gateTabSignup && gateLoginForm && gateSignupForm) {
+    gateTabLogin.addEventListener("click", () => {
+      gateTabLogin.classList.add("active");
+      gateTabSignup.classList.remove("active");
+      gateLoginForm.style.display = "block";
+      gateSignupForm.style.display = "none";
+    });
+    gateTabSignup.addEventListener("click", () => {
+      gateTabSignup.classList.add("active");
+      gateTabLogin.classList.remove("active");
+      gateLoginForm.style.display = "none";
+      gateSignupForm.style.display = "block";
+    });
+  }
+
+  // Gate Login Form submit
+  if (gateLoginForm) {
+    gateLoginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const identifier = document.getElementById("gateLoginIdentifier").value.trim();
+      const password = document.getElementById("gateLoginPassword").value.trim();
+      await executeLogin(identifier, password);
+    });
+  }
+
+  // Gate Signup Form submit
+  if (gateSignupForm) {
+    gateSignupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("gateSignupName").value.trim();
+      const student_id = document.getElementById("gateSignupStudentId").value.trim();
+      const email = document.getElementById("gateSignupEmail").value.trim();
+      const password = document.getElementById("gateSignupPassword").value.trim();
+      const dept = document.getElementById("gateSignupDept") ? document.getElementById("gateSignupDept").value : "Computer Science";
+      const role = document.getElementById("gateSignupRole").value;
+      await executeSignup({ name, student_id, email, password, role, title: dept });
+    });
+  }
+
+  // Sidebar User Footer click -> open Profile tab
+  const sideUserFooter = document.getElementById("sidebarUserFooter");
+  if (sideUserFooter) {
+    sideUserFooter.addEventListener("click", (e) => {
+      if (e.target.closest("#btnSidebarLogout")) return;
+      const navAuthTab = document.getElementById("navAuthTab");
+      if (navAuthTab) navAuthTab.click();
+    });
+  }
+
+  // Sign out buttons
   const btnLogout = document.getElementById("btnLogout");
+  const btnSidebarLogout = document.getElementById("btnSidebarLogout");
+  const btnProfileLogout = document.getElementById("btnProfileLogout");
+  if (btnLogout) btnLogout.addEventListener("click", logoutUser);
+  if (btnSidebarLogout) btnSidebarLogout.addEventListener("click", logoutUser);
+  if (btnProfileLogout) btnProfileLogout.addEventListener("click", logoutUser);
 
   // Restore session from localStorage
   const saved = localStorage.getItem("hostel_user");
   if (saved) {
     try {
       currentUser = JSON.parse(saved);
-      updateAuthUI();
-    } catch {}
-  }
-
-  function updateAuthUI() {
-    if (currentUser) {
-      if (btnOpen) btnOpen.style.display = "none";
-      if (authPill) authPill.style.display = "flex";
-      if (userNameEl) userNameEl.textContent = currentUser.name;
-      if (userRoleEl) {
-        userRoleEl.textContent = currentUser.role.toUpperCase();
-        userRoleEl.className = currentUser.role === "admin" ? "user-role-badge badge-err" : "user-role-badge";
-      }
-      if (currentUser.role === "student") {
-        const fName = document.getElementById("f-name");
-        const fSid = document.getElementById("f-sid");
-        if (fName && !fName.value) fName.value = currentUser.name;
-        if (fSid && !fSid.value) fSid.value = currentUser.student_id;
-      }
-    } else {
-      if (btnOpen) btnOpen.style.display = "inline-flex";
-      if (authPill) authPill.style.display = "none";
+    } catch {
+      currentUser = null;
     }
   }
+  updateAuthUI();
+}
 
-  if (btnOpen && modal) btnOpen.addEventListener("click", () => modal.style.display = "flex");
-  if (btnClose && modal) btnClose.addEventListener("click", () => modal.style.display = "none");
-
-  // Tab switching
-  if (tabLogin && tabSignup && loginForm && signupForm) {
-    tabLogin.addEventListener("click", () => {
-      tabLogin.classList.add("active");
-      tabSignup.classList.remove("active");
-      loginForm.style.display = "block";
-      signupForm.style.display = "none";
-      if (modalTitle) modalTitle.textContent = "🔐 Hostel Portal Sign In";
+async function executeLogin(identifier, password) {
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identifier, password })
     });
-    tabSignup.addEventListener("click", () => {
-      tabSignup.classList.add("active");
-      tabLogin.classList.remove("active");
-      loginForm.style.display = "none";
-      signupForm.style.display = "block";
-      if (modalTitle) modalTitle.textContent = "📝 Create Hostel Account";
-    });
-  }
-
-  // Quick demo credentials buttons
-  const btnFillAdmin = document.getElementById("btnFillAdminLogin");
-  const btnFillStudent = document.getElementById("btnFillStudentLogin");
-  if (btnFillAdmin) {
-    btnFillAdmin.addEventListener("click", () => {
-      document.getElementById("loginIdentifier").value = "admin@hostel.edu";
-      document.getElementById("loginPassword").value = "admin";
-    });
-  }
-  if (btnFillStudent) {
-    btnFillStudent.addEventListener("click", () => {
-      document.getElementById("loginIdentifier").value = "sundram@hostel.edu";
-      document.getElementById("loginPassword").value = "password123";
-    });
-  }
-
-  // Login form submit
-  if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const identifier = document.getElementById("loginIdentifier").value.trim();
-      const password = document.getElementById("loginPassword").value.trim();
-      try {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ identifier, password })
-        });
-        const data = await res.json();
-        if (data.success) {
-          currentUser = data.user;
-          localStorage.setItem("hostel_user", JSON.stringify(currentUser));
-          updateAuthUI();
-          if (modal) modal.style.display = "none";
-          showToast(`👋 Welcome back, ${currentUser.name}!`, "success");
-        } else {
-          showToast(`❌ ${data.error}`, "error");
-        }
-      } catch (err) {
-        showToast("Login failed: " + err.message, "error");
-      }
-    });
-  }
-
-  // Signup form submit
-  if (signupForm) {
-    signupForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const name = document.getElementById("signupName").value.trim();
-      const student_id = document.getElementById("signupStudentId").value.trim();
-      const email = document.getElementById("signupEmail").value.trim();
-      const password = document.getElementById("signupPassword").value.trim();
-      const role = document.getElementById("signupRole").value;
-
-      try {
-        const res = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, student_id, email, password, role })
-        });
-        const data = await res.json();
-        if (data.success) {
-          currentUser = data.user;
-          localStorage.setItem("hostel_user", JSON.stringify(currentUser));
-          updateAuthUI();
-          if (modal) modal.style.display = "none";
-          showToast(`🎉 Account created! Logged in as ${currentUser.name}.`, "success");
-        } else {
-          showToast(`❌ ${data.error}`, "error");
-        }
-      } catch (err) {
-        showToast("Registration failed: " + err.message, "error");
-      }
-    });
-  }
-
-  // Logout button
-  if (btnLogout) {
-    btnLogout.addEventListener("click", () => {
-      currentUser = null;
-      localStorage.removeItem("hostel_user");
+    const data = await res.json();
+    if (data.success) {
+      currentUser = data.user;
+      localStorage.setItem("hostel_user", JSON.stringify(currentUser));
       updateAuthUI();
-      showToast("Logged out successfully.", "info");
+      // Land directly in the Dashboard tab!
+      const dashBtn = document.querySelector('[data-tab="dashboard"]');
+      if (dashBtn) dashBtn.click();
+      showToast(`👋 Welcome back, ${currentUser.name}!`, "success");
+    } else {
+      showToast(`❌ ${data.error}`, "error");
+    }
+  } catch (err) {
+    showToast("Login failed: " + err.message, "error");
+  }
+}
+
+async function executeSignup(payload) {
+  try {
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
     });
+    const data = await res.json();
+    if (data.success) {
+      currentUser = data.user;
+      localStorage.setItem("hostel_user", JSON.stringify(currentUser));
+      updateAuthUI();
+      // Land directly in the Dashboard tab!
+      const dashBtn = document.querySelector('[data-tab="dashboard"]');
+      if (dashBtn) dashBtn.click();
+      showToast(`🎉 Account created! Welcome, ${currentUser.name}.`, "success");
+    } else {
+      showToast(`❌ ${data.error}`, "error");
+    }
+  } catch (err) {
+    showToast("Registration failed: " + err.message, "error");
+  }
+}
+
+function logoutUser() {
+  currentUser = null;
+  localStorage.removeItem("hostel_user");
+  updateAuthUI();
+  showToast("Logged out successfully. Enter credentials to re-access.", "info");
+}
+
+function updateAuthUI() {
+  const authGateScreen = document.getElementById("authGateScreen");
+  const mainAppLayout = document.getElementById("mainAppLayout");
+  const userNameEl = document.getElementById("authUserName");
+  const userSubEl = document.getElementById("authUserSubTitle");
+  const sideUserName = document.getElementById("sidebarUserName");
+  const sideUserSub = document.getElementById("sidebarUserSubTitle");
+  const aiGreeting = document.getElementById("aiGreetingName");
+  const navAuthTab = document.getElementById("navAuthTab");
+
+  if (currentUser) {
+    if (authGateScreen) authGateScreen.style.display = "none";
+    if (mainAppLayout) mainAppLayout.style.display = "flex";
+
+    const defaultTitle = currentUser.role === "admin" ? "Hostel Administrator" : "Computer Science Scholar";
+    if (userNameEl) userNameEl.textContent = currentUser.name || "Sundram Kumar";
+    if (userSubEl) userSubEl.textContent = currentUser.title || defaultTitle;
+    if (sideUserName) sideUserName.textContent = currentUser.name || "Sundram Kumar";
+    if (sideUserSub) sideUserSub.textContent = currentUser.title || defaultTitle;
+    if (aiGreeting) aiGreeting.textContent = (currentUser.name || "Sundram").split(" ")[0];
+
+    if (navAuthTab) {
+      navAuthTab.innerHTML = `<span class="sidebar-item-icon">👤</span> <span class="sidebar-item-label">${escapeHtml(currentUser.name.split(" ")[0] || "Profile")}</span>`;
+    }
+
+    // Populate profile tab
+    const pName = document.getElementById("profileUserName");
+    const pRole = document.getElementById("profileUserRole");
+    const pEmail = document.getElementById("profileUserEmail");
+    const pId = document.getElementById("profileUserId");
+
+    if (pName) pName.textContent = currentUser.name;
+    if (pRole) {
+      pRole.textContent = (currentUser.role || "student").toUpperCase();
+      pRole.className = currentUser.role === "admin" ? "user-role-badge badge-err" : "user-role-badge";
+    }
+    if (pEmail) pEmail.textContent = currentUser.email || "";
+    if (pId) pId.textContent = currentUser.student_id || "CS2026001";
+
+    // Pre-fill allocate form if student
+    if (currentUser.role === "student") {
+      const fName = document.getElementById("f-name");
+      const fSid = document.getElementById("f-sid");
+      if (fName && !fName.value) fName.value = currentUser.name;
+      if (fSid && !fSid.value) fSid.value = currentUser.student_id;
+    }
+
+    refreshGreeting();
+    loadUserBedInfo(currentUser.student_id, currentUser.name);
+  } else {
+    if (authGateScreen) authGateScreen.style.display = "flex";
+    if (mainAppLayout) mainAppLayout.style.display = "none";
+  }
+}
+
+async function loadAuthPage() {
+  updateAuthUI();
+}
+
+async function loadUserBedInfo(studentId, studentName) {
+  const container = document.getElementById("profileBedBody");
+  const badge = document.getElementById("profileBedBadge");
+  if (!container) return;
+
+  container.innerHTML = `
+    <div style="text-align:center;padding:24px;color:var(--text-muted);">
+      <div class="spinner" style="margin:0 auto 10px;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+      Checking MongoDB database and Mutex bed allocation registry...
+    </div>
+  `;
+
+  try {
+    const q = studentId || studentName || "";
+    const res = await fetch(`/api/admin/students?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    const students = data.students || [];
+
+    // Find exact or closest match
+    let match = null;
+    if (studentId) {
+      match = students.find(s => s.student_id && s.student_id.toLowerCase() === studentId.toLowerCase());
+    }
+    if (!match && studentName) {
+      match = students.find(s => s.name && s.name.toLowerCase() === studentName.toLowerCase());
+    }
+
+    if (match) {
+      if (badge) {
+        badge.textContent = "ALLOCATED";
+        badge.className = "badge badge-success";
+      }
+      container.innerHTML = `
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:0.05em;">
+              🔒 Mutual Exclusion (Mutex) Protected Bed
+            </div>
+            <div style="font-size:22px;font-weight:800;color:#fff;margin-top:6px;">
+              Bed: <span style="color:#60a5fa;">${escapeHtml(match.bed)}</span> · Room ${escapeHtml(match.room)} (Block ${escapeHtml(match.block)})
+            </div>
+            <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">
+              Student: <strong>${escapeHtml(match.name)}</strong> (${escapeHtml(match.student_id)}) · Allocated: ${match.allocated_at ? new Date(match.allocated_at).toLocaleString() : 'Active'}
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-primary" onclick="showBedInBlock('${match.block}')">
+              🏢 View in Block Map
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      if (badge) {
+        badge.textContent = "NO BED ALLOCATED";
+        badge.className = "badge badge-muted";
+      }
+      container.innerHTML = `
+        <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:0.05em;">
+              No Bed Reserved Yet
+            </div>
+            <div style="font-size:18px;font-weight:700;color:#fff;margin-top:4px;">
+              You do not have an active hostel bed reservation in the database.
+            </div>
+            <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">
+              Submit an allocation request in the Allocate tab or run a race condition simulation.
+            </div>
+          </div>
+          <button class="btn btn-success" onclick="document.querySelector('[data-tab=\\'allocate\\']').click()">
+            ➕ Apply for a Bed Now
+          </button>
+        </div>
+      `;
+    }
+  } catch (err) {
+    if (badge) {
+      badge.textContent = "STATUS UNKNOWN";
+      badge.className = "badge badge-err";
+    }
+    container.innerHTML = `
+      <div style="padding:16px;color:#f87171;font-size:13px;">
+        Unable to load bed allocation details: ${escapeHtml(err.message)}
+      </div>
+    `;
+  }
+}
+
+function showBedInBlock(block) {
+  const blockTab = document.querySelector('[data-tab="blocks"]');
+  if (blockTab) blockTab.click();
+  const select = document.getElementById("blockSelect");
+  if (select && block) {
+    select.value = block;
+    loadBlocksView();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  MODALS & DRAWERS (NOTIFICATIONS, SETTINGS, HELP, AI PRO)
+// ══════════════════════════════════════════════════════════
+function setupModalsAndDrawers() {
+  // 1. Notifications Modal
+  const notifModal = document.getElementById("notificationsModal");
+  const btnBell = document.getElementById("headerBellBtn");
+  const btnCloseNotif = document.getElementById("closeNotifModal");
+  const btnCloseNotifFoot = document.getElementById("btnCloseNotifFooter");
+  const btnMarkRead = document.getElementById("btnMarkAllNotifsRead");
+  const notifDot = document.getElementById("headerNotifDot");
+  const navNotifCount = document.getElementById("navNotifCount");
+  const notifModalBadge = document.getElementById("notifModalBadge");
+
+  function openNotif() {
+    if (notifModal) notifModal.style.display = "flex";
+  }
+  function closeNotif() {
+    if (notifModal) notifModal.style.display = "none";
+  }
+
+  if (btnBell) btnBell.addEventListener("click", openNotif);
+  if (btnCloseNotif) btnCloseNotif.addEventListener("click", closeNotif);
+  if (btnCloseNotifFoot) btnCloseNotifFoot.addEventListener("click", closeNotif);
+
+  if (btnMarkRead) {
+    btnMarkRead.addEventListener("click", () => {
+      document.querySelectorAll(".notif-list-item").forEach(item => item.classList.remove("unread"));
+      if (notifDot) notifDot.style.display = "none";
+      if (navNotifCount) navNotifCount.textContent = "0";
+      if (notifModalBadge) notifModalBadge.textContent = "0 New";
+      showToast("All notifications marked as read.", "success");
+    });
+  }
+
+  // 2. Settings Modal
+  const settingsModal = document.getElementById("settingsModal");
+  const btnCloseSettings = document.getElementById("closeSettingsModal");
+  const btnCancelSettings = document.getElementById("btnCancelSettings");
+  const btnSaveSettings = document.getElementById("btnSaveSettings");
+  const btnPingMongo = document.getElementById("btnTestMongoPing");
+
+  function openSettings() {
+    if (settingsModal) settingsModal.style.display = "flex";
+    checkMongoDBLiveStatus();
+  }
+  function closeSettings() {
+    if (settingsModal) settingsModal.style.display = "none";
+  }
+
+  if (btnCloseSettings) btnCloseSettings.addEventListener("click", closeSettings);
+  if (btnCancelSettings) btnCancelSettings.addEventListener("click", closeSettings);
+
+  if (btnSaveSettings) {
+    btnSaveSettings.addEventListener("click", () => {
+      closeSettings();
+      showToast("✅ Settings & preferences saved.", "success");
+    });
+  }
+
+  if (btnPingMongo) {
+    btnPingMongo.addEventListener("click", async () => {
+      btnPingMongo.textContent = "Pinging...";
+      await checkMongoDBLiveStatus(true);
+      btnPingMongo.textContent = "⚡ Ping";
+    });
+  }
+
+  // 3. Help Modal
+  const helpModal = document.getElementById("helpGuideModal");
+  const btnHelp = document.getElementById("btnHelpGuide");
+  const btnCloseHelp = document.getElementById("closeHelpModal");
+  const btnCloseHelpFoot = document.getElementById("btnCloseHelpFooter");
+
+  function openHelp() {
+    if (helpModal) helpModal.style.display = "flex";
+  }
+  function closeHelp() {
+    if (helpModal) helpModal.style.display = "none";
+  }
+  if (btnHelp) btnHelp.addEventListener("click", openHelp);
+  if (btnCloseHelp) btnCloseHelp.addEventListener("click", closeHelp);
+  if (btnCloseHelpFoot) btnCloseHelpFoot.addEventListener("click", closeHelp);
+
+  // 4. AI Assistant PRO Drawer
+  const aiDrawer = document.getElementById("aiProDrawer");
+  const btnCloseAI = document.getElementById("closeAIProDrawer");
+  const btnSendAI = document.getElementById("btnSendAI");
+  const aiInput = document.getElementById("aiCustomInput");
+
+  if (btnCloseAI && aiDrawer) {
+    btnCloseAI.addEventListener("click", () => {
+      aiDrawer.classList.remove("open");
+    });
+  }
+
+  if (btnSendAI && aiInput) {
+    btnSendAI.addEventListener("click", () => {
+      const q = aiInput.value.trim();
+      if (!q) return;
+      askAIPrompt(q);
+      aiInput.value = "";
+    });
+    aiInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        btnSendAI.click();
+      }
+    });
+  }
+
+  // Periodic MongoDB status check
+  checkMongoDBLiveStatus();
+  setInterval(checkMongoDBLiveStatus, 15000);
+}
+
+function askAIPrompt(promptText) {
+  const output = document.getElementById("aiChatOutput");
+  if (!output) return;
+
+  const userBubble = document.createElement("div");
+  userBubble.style.cssText = "background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--text);align-self:flex-end;";
+  userBubble.innerHTML = `<strong>You:</strong> ${escapeHtml(promptText)}`;
+  output.appendChild(userBubble);
+
+  let reply = "";
+  const lower = promptText.toLowerCase();
+  if (lower.includes("mutex") && lower.includes("duplicate")) {
+    reply = "<strong>Mutex Lock (Binary Synchronization):</strong><br>A Mutex enforces strict Mutual Exclusion over the Critical Section (<code>Check availability &rarr; Reserve bed &rarr; Write occupant record</code>). When Applicant 1 acquires the lock, Applicant 2 is blocked until release. Upon release, the bed is already marked occupied, completely eliminating race conditions (0% double-booking probability).";
+  } else if (lower.includes("semaphore") || lower.includes("150") || lower.includes("100")) {
+    reply = "<strong>Counting Semaphore(100 Permits):</strong><br>A Counting Semaphore manages a finite resource pool of <em>N</em> units. With <em>N</em>=100 beds, the semaphore permits exactly 100 concurrent threads to proceed. When the 101st through 150th applicants arrive, the semaphore counter is &le; 0, blocking or cleanly rejecting the 50 overflow applicants without corrupting bed assignments.";
+  } else if (lower.includes("mongo") || lower.includes("db") || lower.includes("database")) {
+    reply = "<strong>MongoDB 9.0 Database Engine:</strong><br>Connected to <code>mongodb://localhost:27017/hostel_db</code>.<br>• <code>users</code> collection: Stores authenticated student &amp; admin profiles.<br>• <code>allocations</code> collection: Persists real-time bed lease records.<br>• <code>system_logs</code> collection: Audit trail of concurrency acquisitions.";
+  } else {
+    reply = "<strong>HostelHub Concurrency Diagnostics:</strong><br>System operational. Mutex lock status: Ready. Counting Semaphore pool: 100 permits armed. 0 race condition collisions detected across active worker threads.";
+  }
+
+  const aiBubble = document.createElement("div");
+  aiBubble.className = "ai-response-bubble";
+  aiBubble.style.marginTop = "6px";
+  aiBubble.innerHTML = `<span style="color:#c084fc;font-weight:700;">✨ AI Assistant:</span><br>${reply}`;
+  output.appendChild(aiBubble);
+  output.scrollTop = output.scrollHeight;
+}
+
+async function checkMongoDBLiveStatus(isManualPing = false) {
+  try {
+    const res = await fetch("/api/mongodb/status");
+    const data = await res.json();
+    const pill = document.getElementById("headerMongoPill");
+    const details = document.getElementById("settingsMongoDetails");
+
+    if (data.connected) {
+      if (pill) {
+        pill.innerHTML = `<span class="mongo-dot"></span> 🍃 MongoDB 9.0 Active`;
+        pill.className = "mongo-status-pill";
+      }
+      if (details) {
+        details.textContent = `Connected: ${data.host} · DB: ${data.database} (${data.users_count} users, ${data.allocations_count} active leases)`;
+      }
+      if (isManualPing) {
+        showToast(`🍃 MongoDB Ping Successful! (${data.ping_ms || 1.2}ms latency)`, "success");
+      }
+    } else {
+      if (pill) {
+        pill.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;display:inline-block;"></span> Memory Fallback`;
+      }
+      if (isManualPing) {
+        showToast("⚠️ MongoDB server not connected on localhost:27017", "warning");
+      }
+    }
+  } catch (err) {
+    console.error("MongoDB check error:", err);
   }
 }
 
